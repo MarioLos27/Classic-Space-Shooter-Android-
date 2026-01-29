@@ -3,11 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".GameActivity">
+    tools:context=".ui.game.GameActivity">
 
     <!-- Nuestra vista personalizada del juego -->
-    <!-- Ocupa toda la pantalla -->
-    <com.mario.spaceshooter.ui.game
+
+    <com.mario.spaceshooter.ui.game.GameSurfaceView
         android:id="@+id/gameSurfaceView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

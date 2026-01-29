@@ -20,16 +20,16 @@ class GameSurfaceView(context: Context, attrs: AttributeSet) : SurfaceView(conte
     private var playerName: String = ""
     private var difficulty: Difficulty = Difficulty.EASY
 
-    // Variables de pantalla (se inicializan al cambiar el tamaño)
+    // Screen variables (initialized when size changes)
     private var screenWidth = 0
     private var screenHeight = 0
 
     init {
-        // Opcional: Cargar aquí recursos pesados si fuera necesario
+        // Optional: Load heavy resources here if necessary
     }
 
     /**
-     * Configurate initial params received from the menu
+     * Configure initial params received from the menu
      */
     fun configureGame(name: String, diff: Difficulty) {
         this.playerName = name
@@ -40,8 +40,8 @@ class GameSurfaceView(context: Context, attrs: AttributeSet) : SurfaceView(conte
     override fun run() {
         while (playing) {
             update() // Calculate the movements and physics
-            draw()   // 2. Dibujar en la pantalla
-            control() // 3. Controlar los FPS (Frames por segundo)
+            draw()   // Draw on the screen
+            control() // Control the FPS (Frames per second)
         }
     }
 
@@ -49,38 +49,38 @@ class GameSurfaceView(context: Context, attrs: AttributeSet) : SurfaceView(conte
      * Game logic
      */
     private fun update() {
-        // TODO: Mover la nave del jugador
-        // TODO: Generar enemigos aleatorios según dificultad
-        // TODO: Mover enemigos y detectar colisiones
+        // TODO: Move the player's ship
+        // TODO: Generate random enemies according to difficulty
+        // TODO: Move enemies and detect collisions
     }
 
     /**
-     * draw elements with canvas
+     * Draw elements with canvas
      */
     private fun draw() {
         if (surfaceHolder.surface.isValid) {
-            // Bloqueamos el canvas para dibujar
+            // Lock the canvas to draw
             val canvas = surfaceHolder.lockCanvas()
 
-            // 1. Limpiar pantalla (Pintar fondo)
-            // Usamos un color oscuro espacial
+            // 1. Clear screen (Paint background)
+            // We use a dark space color
             canvas.drawColor(Color.parseColor("#050B14"))
 
-            // 2. Dibujar elementos de prueba (Debugging)
+            // 2. Draw test elements (Debugging)
             paint.color = Color.WHITE
             paint.textSize = 50f
-            canvas.drawText("Piloto: $playerName", 50f, 100f, paint)
-            canvas.drawText("Amenaza: ${difficulty.name}", 50f, 180f, paint)
+            canvas.drawText("Pilot: $playerName", 50f, 100f, paint)
+            canvas.drawText("Threat: ${difficulty.name}", 50f, 180f, paint)
 
-            // TODO: Dibujar bitmaps de naves aquí
+            // TODO: Draw ship bitmaps here
 
-            // Desbloqueamos el canvas para mostrar lo dibujado
+            // Unlock the canvas to display what was drawn
             surfaceHolder.unlockCanvasAndPost(canvas)
         }
     }
 
     /**
-     * Controla la velocidad del bucle (aprox 60 FPS)
+     * Controls the loop speed (approx 60 FPS)
      */
     private fun control() {
         try {
@@ -105,11 +105,11 @@ class GameSurfaceView(context: Context, attrs: AttributeSet) : SurfaceView(conte
         gameThread?.start()
     }
 
-    // Se llama cuando cambia el tamaño de la pantalla (ej. rotación o inicio)
+    // Called when the screen size changes (e.g. rotation or startup)
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         screenWidth = w
         screenHeight = h
-        // Aquí inicializaremos la posición del jugador
+        // Here we will initialize the player's position
     }
 }

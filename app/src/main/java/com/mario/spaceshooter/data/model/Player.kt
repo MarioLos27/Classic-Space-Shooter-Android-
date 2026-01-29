@@ -9,34 +9,34 @@ import com.mario.spaceshooter.R
 
 class Player(context: Context, screenX: Int, screenY: Int) {
 
-    // Imagen de la nave
-    var bitmap: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.ic_launcher_foreground) // Usa tu icono o imagen propia
+    // SpaceShip image
+    var bitmap: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.ic_launcher_foreground) // Use your own icon or image
 
-    // Coordenadas
+    // Coordinates
     var x: Int = 0
     var y: Int = 0
 
-    // Velocidad de movimiento
-    private val speed = 20 // Píxeles por frame
+    // Movement speed
+    private val speed = 20 // Pixels per frame
 
-    // Variables de control
+    // Control variables
     var isGoingUp = false
     var isGoingDown = false
 
-    // Límites de la pantalla para no salirse
+    // Screen limits to prevent going off-screen
     private val maxY: Int
     private val minY: Int
 
-    // Hitbox para colisiones
+    // Hitbox for collisions
     private val detectCollision: Rect
 
     init {
-        // Redimensionar la nave si es muy grande (opcional, ej: 100x100 px)
+        // Resize the ship if it's too large (optional, e.g.: 100x100 px)
         bitmap = Bitmap.createScaledBitmap(bitmap, 150, 150, false)
 
-        // Posición inicial: Izquierda centrado verticalmente (según tu PDF la tuya está a la DERECHA)
-        // PDF: "A la derecha de la pantalla se visualizará mi nave"
-        x = screenX - bitmap.width - 50 // Margen derecho
+        // Initial position: Left centered vertically (according to your PDF yours is on the RIGHT)
+        // PDF: "My ship will be displayed on the right side of the screen"
+        x = screenX - bitmap.width - 50 // Right margin
         y = screenY / 2 - bitmap.height / 2
 
         maxY = screenY - bitmap.height
@@ -46,7 +46,7 @@ class Player(context: Context, screenX: Int, screenY: Int) {
     }
 
     fun update() {
-        // Movimiento exclusivo vertical (Arriba/Abajo)
+        // Exclusive vertical movement (Up/Down)
         if (isGoingUp) {
             y -= speed
         }
@@ -54,22 +54,22 @@ class Player(context: Context, screenX: Int, screenY: Int) {
             y += speed
         }
 
-        // Control de límites (No salir de pantalla)
+        // Boundary control (Don't go off-screen)
         if (y < minY) y = minY
         if (y > maxY) y = maxY
 
-        // Actualizar Hitbox
+        // Update Hitbox
         detectCollision.left = x
         detectCollision.top = y
         detectCollision.right = x + bitmap.width
         detectCollision.bottom = y + bitmap.height
     }
 
-    // Método para cambiar posición absoluta (para el Ratón/Touch)
+    // Method to change absolute position (for Mouse/Touch)
     fun updatePosition(newY: Int) {
         y = newY - bitmap.height / 2
 
-        // Control de límites
+        // Boundary control
         if (y < minY) y = minY
         if (y > maxY) y = maxY
 
