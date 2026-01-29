@@ -5,15 +5,125 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/background_space"
+    android:padding="24dp"
     tools:context=".MainActivity">
 
     <TextView
+        android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
+        android:fontFamily="sans-serif-black"
+        android:text="SPACE SHOOTER"
+        android:textColor="@color/neon_cyan"
+        android:textSize="36sp"
+        android:shadowColor="@color/neon_purple"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:shadowRadius="20"
+        android:letterSpacing="0.1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/ivLogo"
+        app:layout_constraintVertical_chainStyle="packed"/>
+
+    <ImageView
+        android:id="@+id/ivLogo"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:layout_marginTop="24dp"
+        android:src="@drawable/game_icon"
+        android:scaleType="fitCenter"
+        app:layout_constraintTop_toBottomOf="@+id/tvTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/etPlayerName"/>
+
+    <EditText
+        android:id="@+id/etPlayerName"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="32dp"
+        android:background="@drawable/input_background"
+        android:hint="Piloto, introduce tu nombre"
+        android:textColorHint="@color/text_hint"
+        android:textColor="@color/white"
+        android:inputType="textPersonName"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ivLogo" />
+
+    <TextView
+        android:id="@+id/tvDifficultyLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="NIVEL DE AMENAZA"
+        android:fontFamily="sans-serif-condensed"
+        android:textStyle="bold"
+        android:textColor="@color/neon_cyan"
+        android:letterSpacing="0.15"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etPlayerName" />
+
+    <RadioGroup
+        android:id="@+id/rgDifficulty"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvDifficultyLabel">
+
+        <RadioButton
+            android:id="@+id/rbEasy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Fácil - Recluta"
+            android:textColor="@color/white"
+            android:buttonTint="@color/neon_cyan"
+            android:paddingStart="12dp"/>
+
+        <RadioButton
+            android:id="@+id/rbMedium"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Medio - Veterano"
+            android:textColor="@color/white"
+            android:buttonTint="@color/neon_cyan"
+            android:paddingStart="12dp"/>
+
+        <RadioButton
+            android:id="@+id/rbHard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Difícil - Leyenda"
+            android:textColor="@color/white"
+            android:buttonTint="@color/neon_purple"
+            android:paddingStart="12dp"/>
+    </RadioGroup>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnStartGame"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="40dp"
+        android:background="@drawable/button_background"
+        android:text="INICIAR MISIÓN"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/space_background_dark"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/rgDifficulty"
+        app:layout_constraintVertical_bias="1.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

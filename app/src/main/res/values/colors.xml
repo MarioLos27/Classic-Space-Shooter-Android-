@@ -2,4 +2,12 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Space Theme Colors -->
+    <color name="space_background_dark">#050B14</color>
+    <color name="space_background_light">#1A237E</color>
+    <color name="neon_cyan">#00E5FF</color>
+    <color name="neon_purple">#D500F9</color>
+    <color name="glass_white">#22FFFFFF</color>
+    <color name="text_hint">#80FFFFFF</color>
 </resources>
