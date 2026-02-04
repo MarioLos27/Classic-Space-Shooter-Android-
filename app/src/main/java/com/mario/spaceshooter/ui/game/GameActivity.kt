@@ -1,5 +1,7 @@
 package com.mario.spaceshooter.ui.game
 
+import android.content.Intent
+import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowInsets
@@ -11,6 +13,7 @@ import com.mario.spaceshooter.data.model.Difficulty
 class GameActivity : AppCompatActivity() {
 
     private lateinit var gameSurfaceView: GameSurfaceView
+    private var mediaPlayer: MediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,7 +23,7 @@ class GameActivity : AppCompatActivity() {
         // 2. Hide system bars for fullscreen mode (Immersive)
         hideSystemUI()
 
-        // 3. Find the game view by its correct ID (NOT R.id.main)
+        // 3. Find the game view by its correct ID
         gameSurfaceView = findViewById(R.id.gameSurfaceView)
 
         // 4. Receive data from Intent (Menu)
@@ -34,6 +37,13 @@ class GameActivity : AppCompatActivity() {
             intent.getSerializableExtra("DIFFICULTY") as? Difficulty
         } ?: Difficulty.EASY
 
+        // CONFIGURAR LISTENER DE GAME OVER
+        gameSurfaceView.onGameOverListener = {
+            runOnUiThread {
+                gameOver()
+            }
+        }
+
         // 5. Start the game engine
         gameSurfaceView.configureGame(playerName, difficulty)
     }
@@ -42,11 +52,42 @@ class GameActivity : AppCompatActivity() {
         super.onResume()
         hideSystemUI()
         gameSurfaceView.resume()
+
+        // INICIAR MÚSICA DE FONDO
+        if (mediaPlayer == null) {
+            // Carga el archivo desde res/raw/asteroid_attack.mp3
+            mediaPlayer = MediaPlayer.create(this, R.raw.asteroid_attack)
+            mediaPlayer?.isLooping = true // Para que se repita la música
+            mediaPlayer?.start()
+        }
     }
 
     override fun onPause() {
         super.onPause()
         gameSurfaceView.pause()
+
+        // PAUSAR Y LIBERAR RECURSOS DE MÚSICA
+        mediaPlayer?.stop()
+        mediaPlayer?.release()
+        mediaPlayer = null
+    }
+
+    private fun gameOver() {
+        // Detener música inmediatamente antes de cambiar de pantalla
+        try {
+            if (mediaPlayer?.isPlaying == true) {
+                mediaPlayer?.stop()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        mediaPlayer?.release()
+        mediaPlayer = null
+
+        // Ir a la pantalla de Game Over
+        val intent = Intent(this, GameOverActivity::class.java)
+        startActivity(intent)
+        finish() // Cierra la actividad del juego para que no se pueda volver atrás
     }
 
     private fun hideSystemUI() {

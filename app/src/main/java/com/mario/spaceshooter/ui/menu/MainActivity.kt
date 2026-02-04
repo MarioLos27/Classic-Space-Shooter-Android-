@@ -1,6 +1,7 @@
 package com.mario.spaceshooter.ui.menu
 
 import android.content.Intent
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -12,12 +13,15 @@ import androidx.core.view.WindowInsetsCompat
 import com.mario.spaceshooter.R
 import com.mario.spaceshooter.data.model.Difficulty
 import com.mario.spaceshooter.ui.game.GameActivity
+import com.mario.spaceshooter.ui.game.GameSurfaceView
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var etPlayerName: EditText
     private lateinit var rgDifficulty: RadioGroup
     private lateinit var btnStartGame: Button
+    private lateinit var gameSurfaceView: GameSurfaceView
+    private var mediaPlayer: MediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +32,8 @@ class MainActivity : AppCompatActivity() {
         etPlayerName = findViewById(R.id.etPlayerName)
         rgDifficulty = findViewById(R.id.rgDifficulty)
         btnStartGame = findViewById(R.id.btnStartGame)
+
+
 
         // Configuration for start button
         btnStartGame.setOnClickListener {
