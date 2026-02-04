@@ -1,14 +1,17 @@
 package com.mario.spaceshooter.ui.game
 
 import android.content.Context
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
+import android.media.SoundPool
 import android.util.AttributeSet
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import com.mario.spaceshooter.R
 import com.mario.spaceshooter.data.model.Difficulty
 import com.mario.spaceshooter.data.model.Enemy
 import com.mario.spaceshooter.data.model.Player
@@ -30,25 +33,27 @@ class GameSurfaceView(context: Context, attrs: AttributeSet) : SurfaceView(conte
     private var screenWidth = 0
     private var screenHeight = 0
 
-    // Entidades del juego (¡Esto te faltaba!)
+    // Entidades del juego
     private var player: Player? = null
-    // Usamos CopyOnWriteArrayList para evitar errores si modificamos la lista mientras se dibuja
     private val enemies = CopyOnWriteArrayList<Enemy>()
 
-    // Lógica de spawn (generación de enemigos)
+    // Gestión de tiempo y dificultad
     private var lastEnemySpawnTime: Long = 0
+    private var gameStartTime: Long = 0
 
-    // Callback para avisar a la Activity de que hemos perdido
+    // Sonidos
+    private val soundPool = SoundPool.Builder().setMaxStreams(5).build()
+    private var collisionSoundId: Int = 0
+
+    // Callback para Game Over
     var onGameOverListener: (() -> Unit)? = null
 
     init {
-        // Importante para detectar pulsaciones de teclado
         isFocusable = true
+        // Cargar el sonido de colisión (asegúrate de que collision.mp3 está en res/raw)
+        collisionSoundId = soundPool.load(context, R.raw.collision, 1)
     }
 
-    /**
-     * Configurar parámetros iniciales recibidos desde el menú
-     */
     fun configureGame(name: String, diff: Difficulty) {
         this.playerName = name
         this.difficulty = diff
@@ -56,103 +61,113 @@ class GameSurfaceView(context: Context, attrs: AttributeSet) : SurfaceView(conte
 
     override fun run() {
         while (playing) {
-            update()  // Calcular física y movimientos
-            draw()    // Dibujar en pantalla
-            control() // Controlar los FPS (aprox 60)
+            update()
+            draw()
+            control()
         }
     }
 
-    /**
-     * Lógica principal del juego
-     */
     private fun update() {
+        if (screenHeight <= 0 || screenWidth <= 0) return
+
         // 1. Actualizar Jugador
         player?.update()
 
-        // 2. Generar Enemigos (Basado en la dificultad)
-        if (System.currentTimeMillis() - lastEnemySpawnTime > difficulty.spawnInterval) {
-            // Añadimos un enemigo nuevo
+        // ... resto del código igual ...
+
+        // 2. Calcular factor de tiempo (Aumenta dificultad progresivamente)
+        // Cada 10 segundos, la velocidad aumenta un 10% (aprox)
+        val timeElapsed = System.currentTimeMillis() - gameStartTime
+        val timeMultiplier = 1.0f + (timeElapsed / 10000f) * 0.1f
+
+        // 3. Generar Enemigos
+        // Reducimos el intervalo de aparición con el tiempo (más frenético)
+        val currentSpawnInterval = (difficulty.spawnInterval / timeMultiplier).toLong()
+
+        if (System.currentTimeMillis() - lastEnemySpawnTime > currentSpawnInterval) {
             val enemy = Enemy(context, screenWidth, screenHeight)
             enemies.add(enemy)
             lastEnemySpawnTime = System.currentTimeMillis()
         }
 
-        // 3. Actualizar Enemigos y Colisiones
+        // 4. Actualizar Enemigos y Colisiones
         for (enemy in enemies) {
-            // Ajustar velocidad según dificultad [cite: 101]
-            enemy.update((enemy.speed * difficulty.enemySpeedMultiplier).toInt())
+            // Calcular nueva velocidad basada en dificultad base y tiempo transcurrido
+            // enemy.speed base es 10. Multiplicamos por dificultad y por tiempo.
+            val newSpeed = (10 * difficulty.enemySpeedMultiplier * timeMultiplier).toInt()
+            enemy.speed = newSpeed
 
-            // Si sale de la pantalla por la derecha, eliminarlo para ahorrar memoria
-            // NOTA: Según tu lógica en Enemy.kt, el enemigo va sumando X.
+            // Llamamos a update (el parámetro se ignora en tu clase Enemy actual,
+            // pero ya hemos actualizado la propiedad .speed arriba)
+            enemy.update(newSpeed)
+
+            // Eliminar si sale de pantalla
             if (enemy.x > screenWidth) {
                 enemies.remove(enemy)
             }
 
-            // DETECCIÓN DE COLISIÓN (Game Over) [cite: 102]
+            // DETECCIÓN DE COLISIÓN
             if (player != null && Rect.intersects(player!!.getCollisionShape(), enemy.getCollisionShape())) {
-                playing = false // Detener el bucle
-
-                // Avisamos a la Activity para que muestre la pantalla de Game Over
-                // (Es importante hacerlo en un hilo de UI si vas a mostrar vistas,
-                // pero aquí solo invocamos el callback)
-                onGameOverListener?.invoke()
+                handleGameOver()
             }
         }
     }
 
-    /**
-     * Dibujar elementos con Canvas
-     */
+    private fun handleGameOver() {
+        if (!playing) return // Evitar llamadas múltiples
+        playing = false
+
+        // Reproducir sonido de explosión
+        if (collisionSoundId != 0) {
+            soundPool.play(collisionSoundId, 1f, 1f, 0, 0, 1f)
+        }
+
+        // Avisar a la Activity
+        onGameOverListener?.invoke()
+    }
+
     private fun draw() {
         if (surfaceHolder.surface.isValid) {
-            // Bloquear el canvas para dibujar
             val canvas = surfaceHolder.lockCanvas()
-
-            // 1. Limpiar pantalla (Fondo oscuro)
             canvas.drawColor(Color.parseColor("#050B14"))
 
-            // 2. Dibujar Jugador
             player?.let {
                 canvas.drawBitmap(it.bitmap, it.x.toFloat(), it.y.toFloat(), paint)
             }
 
-            // 3. Dibujar Enemigos
             for (enemy in enemies) {
                 canvas.drawBitmap(enemy.bitmap, enemy.x.toFloat(), enemy.y.toFloat(), paint)
             }
 
-            // 4. Debug info / HUD
+            // HUD: Mostrar nombre y tiempo
             paint.color = Color.WHITE
-            paint.textSize = 50f
-            canvas.drawText("Piloto: $playerName", 50f, 100f, paint)
-            // canvas.drawText("Enemigos: ${enemies.size}", 50f, 180f, paint)
+            paint.textSize = 40f
+            canvas.drawText("Piloto: $playerName", 50f, 80f, paint)
 
-            // Desbloquear y mostrar lo dibujado
+            // Mostrar tiempo de supervivencia
+            val seconds = (System.currentTimeMillis() - gameStartTime) / 1000
+            canvas.drawText("Tiempo: ${seconds}s", 50f, 140f, paint)
+
             surfaceHolder.unlockCanvasAndPost(canvas)
         }
     }
 
     private fun control() {
         try {
-            Thread.sleep(17) // ~60 FPS
+            Thread.sleep(17)
         } catch (e: InterruptedException) {
             e.printStackTrace()
         }
     }
 
-    // --- CONTROLES (Requisito del PDF: Teclado y Ratón) ---
-
-    // 1. Control Táctil / Ratón (Arrastrar para mover)
+    // --- CONTROLES ---
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        // ACTION_MOVE sirve tanto para arrastrar el dedo como el ratón pulsado
         if (event.action == MotionEvent.ACTION_MOVE || event.action == MotionEvent.ACTION_DOWN) {
-            // Actualizamos la posición Y de la nave para que siga al puntero
             player?.updatePosition(event.y.toInt())
         }
         return true
     }
 
-    // 2. Control por Teclado (Flechas o WASD)
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         player?.let {
             when (keyCode) {
@@ -173,8 +188,7 @@ class GameSurfaceView(context: Context, attrs: AttributeSet) : SurfaceView(conte
         return super.onKeyUp(keyCode, event)
     }
 
-    // --- GESTIÓN DEL HILO Y PANTALLA ---
-
+    // --- GESTIÓN ---
     fun pause() {
         playing = false
         try {
@@ -186,6 +200,9 @@ class GameSurfaceView(context: Context, attrs: AttributeSet) : SurfaceView(conte
 
     fun resume() {
         playing = true
+        // Reiniciar el contador de tiempo si es una partida nueva o continuar
+        if (gameStartTime == 0L) gameStartTime = System.currentTimeMillis()
+
         gameThread = Thread(this)
         gameThread?.start()
     }
@@ -194,8 +211,6 @@ class GameSurfaceView(context: Context, attrs: AttributeSet) : SurfaceView(conte
         super.onSizeChanged(w, h, oldw, oldh)
         screenWidth = w
         screenHeight = h
-
-        // Reinicializar jugador si cambia la pantalla
         if (player == null) {
             player = Player(context, screenWidth, screenHeight)
         }

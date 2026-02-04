@@ -6,47 +6,43 @@ import android.graphics.BitmapFactory
 import android.graphics.Rect
 import com.mario.spaceshooter.R
 import java.util.Random
+import kotlin.math.max
 
 class Enemy(context: Context, screenX: Int, screenY: Int) {
 
-    // Use your own enemy image (make sure you have ic_enemy or similar in drawable)
-    // If you don't have one, use ic_launcher_foreground temporarily
-    var bitmap: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.ic_launcher_foreground)
+    // Usamos el icono provisional para evitar errores de XML
+    var bitmap: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.game_icon)
 
     var x: Int = 0
     var y: Int = 0
     var speed: Int = 10
-
-    // Hitbox
     private val detectCollision: Rect
-
-    // Limits
     private val maxX: Int
     private val maxY: Int
 
     init {
-        // Reduce enemy size (e.g. 120x120)
+        // Reducir tamaño
         bitmap = Bitmap.createScaledBitmap(bitmap, 120, 120, false)
 
         maxX = screenX
+        // Calculamos el límite vertical
         maxY = screenY - bitmap.height
 
-        // Initial Spawn:
-        // X = -width (hidden to the left of the screen)
-        // Y = Random vertical position
+        // Posición inicial X (fuera de pantalla a la izquierda)
         x = -bitmap.width
+
+        // CORRECCIÓN DEL ERROR:
+        // Si maxY es negativo o 0 (pantalla no cargada), usamos 1 para evitar el crash
+        val safeMaxY = if (maxY > 0) maxY else 1
+
         val generator = Random()
-        y = generator.nextInt(maxY)
+        y = generator.nextInt(safeMaxY)
 
         detectCollision = Rect(x, y, x + bitmap.width, y + bitmap.height)
     }
 
     fun update(playerSpeed: Int) {
-        // Move to the right (increase X)
-        // PDF: "ships appear... from the left of the screen to the right"
         x += speed
-
-        // Update Hitbox
         detectCollision.left = x
         detectCollision.top = y
         detectCollision.right = x + bitmap.width
