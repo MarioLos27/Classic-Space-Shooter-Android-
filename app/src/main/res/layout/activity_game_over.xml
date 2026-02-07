@@ -2,32 +2,52 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000"
+    android:background="@drawable/background_space"
     android:gravity="center"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="32dp">
+
+    <ImageView
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginBottom="24dp"
+        android:src="@drawable/game_icon_circle"
+        android:alpha="0.9" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-black"
         android:text="GAME OVER"
-        android:textColor="#FF0000"
-        android:textSize="60sp"
+        android:textColor="#FF5252"
+        android:textSize="56sp"
+        android:letterSpacing="0.1"
+        android:shadowColor="#D50000"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:shadowRadius="40"
+        android:textAlignment="center"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="60dp"
+        android:fontFamily="sans-serif-condensed"
+        android:text="[- SEÑAL PERDIDA -]"
+        android:textColor="@color/neon_cyan"
+        android:textSize="20sp"
+        android:letterSpacing="0.3"
         android:textStyle="bold" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Misión Fallida"
-        android:textColor="#FFFFFF"
-        android:textSize="24sp" />
-
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnReturnMenu"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:text="Volver al Menú"
-        android:backgroundTint="#00E5FF" />
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@drawable/button_background"
+        android:text="VOLVER A LA BASE"
+        android:textColor="@color/space_background_dark"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
 </LinearLayout>

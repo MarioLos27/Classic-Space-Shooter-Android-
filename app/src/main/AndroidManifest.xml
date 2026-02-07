@@ -13,7 +13,6 @@
         android:theme="@style/Theme.SpaceShooter">
         <activity
             android:name=".ui.game.GameOverActivity"
-            android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity  
             android:name=".ui.game.GameActivity"
