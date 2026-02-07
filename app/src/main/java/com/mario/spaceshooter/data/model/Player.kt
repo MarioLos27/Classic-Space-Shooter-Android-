@@ -9,7 +9,7 @@ import com.mario.spaceshooter.R
 class Player(context: Context, screenX: Int, screenY: Int) {
 
     // CAMBIO: Usamos game_icon (JPG) en lugar de ic_launcher_foreground (XML)
-    var bitmap: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.game_icon)
+    var bitmap: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.gumiship)
 
     // Coordinates
     var x: Int = 0
