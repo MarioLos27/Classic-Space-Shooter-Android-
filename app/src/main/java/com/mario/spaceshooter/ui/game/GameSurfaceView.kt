@@ -1,6 +1,8 @@
 package com.mario.spaceshooter.ui.game
 
 import android.content.Context
+import android.graphics.Bitmap // Importante
+import android.graphics.BitmapFactory // Importante
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -48,6 +50,10 @@ class GameSurfaceView(context: Context, attrs: AttributeSet) : SurfaceView(conte
     // Callback para Game Over
     var onGameOverListener: (() -> Unit)? = null
 
+    // --- FONDO DEL JUEGO ---
+    // Declaramos la variable aquí para usarla en toda la clase
+    private var bgBitmap: Bitmap? = null
+
     init {
         isFocusable = true
         // Cargar el sonido de colisión (asegúrate de que collision.mp3 está en res/raw)
@@ -73,15 +79,11 @@ class GameSurfaceView(context: Context, attrs: AttributeSet) : SurfaceView(conte
         // 1. Actualizar Jugador
         player?.update()
 
-        // ... resto del código igual ...
-
         // 2. Calcular factor de tiempo (Aumenta dificultad progresivamente)
-        // Cada 10 segundos, la velocidad aumenta un 10% (aprox)
         val timeElapsed = System.currentTimeMillis() - gameStartTime
         val timeMultiplier = 1.0f + (timeElapsed / 10000f) * 0.1f
 
         // 3. Generar Enemigos
-        // Reducimos el intervalo de aparición con el tiempo (más frenético)
         val currentSpawnInterval = (difficulty.spawnInterval / timeMultiplier).toLong()
 
         if (System.currentTimeMillis() - lastEnemySpawnTime > currentSpawnInterval) {
@@ -92,21 +94,14 @@ class GameSurfaceView(context: Context, attrs: AttributeSet) : SurfaceView(conte
 
         // 4. Actualizar Enemigos y Colisiones
         for (enemy in enemies) {
-            // Calcular nueva velocidad basada en dificultad base y tiempo transcurrido
-            // enemy.speed base es 10. Multiplicamos por dificultad y por tiempo.
             val newSpeed = (10 * difficulty.enemySpeedMultiplier * timeMultiplier).toInt()
             enemy.speed = newSpeed
-
-            // Llamamos a update (el parámetro se ignora en tu clase Enemy actual,
-            // pero ya hemos actualizado la propiedad .speed arriba)
             enemy.update(newSpeed)
 
-            // Eliminar si sale de pantalla
             if (enemy.x > screenWidth) {
                 enemies.remove(enemy)
             }
 
-            // DETECCIÓN DE COLISIÓN
             if (player != null && Rect.intersects(player!!.getCollisionShape(), enemy.getCollisionShape())) {
                 handleGameOver()
             }
@@ -114,37 +109,43 @@ class GameSurfaceView(context: Context, attrs: AttributeSet) : SurfaceView(conte
     }
 
     private fun handleGameOver() {
-        if (!playing) return // Evitar llamadas múltiples
+        if (!playing) return
         playing = false
 
-        // Reproducir sonido de explosión
         if (collisionSoundId != 0) {
             soundPool.play(collisionSoundId, 1f, 1f, 0, 0, 1f)
         }
-
-        // Avisar a la Activity
         onGameOverListener?.invoke()
     }
 
     private fun draw() {
         if (surfaceHolder.surface.isValid) {
             val canvas = surfaceHolder.lockCanvas()
-            canvas.drawColor(Color.parseColor("#050B14"))
 
+            // --- DIBUJAR FONDO ---
+            if (bgBitmap != null) {
+                // Dibujamos la imagen en la posición 0,0
+                canvas.drawBitmap(bgBitmap!!, 0f, 0f, null)
+            } else {
+                // Si falla la carga, fondo negro por seguridad
+                canvas.drawColor(Color.BLACK)
+            }
+
+            // Dibujar Jugador
             player?.let {
                 canvas.drawBitmap(it.bitmap, it.x.toFloat(), it.y.toFloat(), paint)
             }
 
+            // Dibujar Enemigos
             for (enemy in enemies) {
                 canvas.drawBitmap(enemy.bitmap, enemy.x.toFloat(), enemy.y.toFloat(), paint)
             }
 
-            // HUD: Mostrar nombre y tiempo
+            // HUD
             paint.color = Color.WHITE
             paint.textSize = 40f
             canvas.drawText("Piloto: $playerName", 50f, 80f, paint)
 
-            // Mostrar tiempo de supervivencia
             val seconds = (System.currentTimeMillis() - gameStartTime) / 1000
             canvas.drawText("Tiempo: ${seconds}s", 50f, 140f, paint)
 
@@ -188,7 +189,6 @@ class GameSurfaceView(context: Context, attrs: AttributeSet) : SurfaceView(conte
         return super.onKeyUp(keyCode, event)
     }
 
-    // --- GESTIÓN ---
     fun pause() {
         playing = false
         try {
@@ -200,17 +200,28 @@ class GameSurfaceView(context: Context, attrs: AttributeSet) : SurfaceView(conte
 
     fun resume() {
         playing = true
-        // Reiniciar el contador de tiempo si es una partida nueva o continuar
         if (gameStartTime == 0L) gameStartTime = System.currentTimeMillis()
 
         gameThread = Thread(this)
         gameThread?.start()
     }
 
+    // --- AQUÍ SE INICIALIZA EL FONDO ---
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         screenWidth = w
         screenHeight = h
+
+        // Lógica para cargar y escalar el fondo usando 'w' y 'h'
+        try {
+            val original = BitmapFactory.decodeResource(resources, R.drawable.game_background)
+            if (original != null) {
+                bgBitmap = Bitmap.createScaledBitmap(original, w, h, false)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
         if (player == null) {
             player = Player(context, screenWidth, screenHeight)
         }
